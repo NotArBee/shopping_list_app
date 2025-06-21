@@ -1,7 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shopping_list/data/categories.dart';
 import 'package:shopping_list/models/category.dart';
-import 'package:shopping_list/models/grocery_item.dart';
 
 class AddItemScreen extends StatefulWidget {
   const AddItemScreen({super.key});
@@ -17,15 +19,26 @@ class _AddItemScreenState extends State<AddItemScreen> {
   var _selectedCategory = categories[Categories.meat]!;
 
   void _saveItem() {
+    final url = Uri.https(
+        'flutter-prep-81837-default-rtdb.asia-southeast1.firebasedatabase.app',
+        'shopping-list.json');
+
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      Navigator.pop(
-          context,
-          GroceryItem(
-              id: DateTime.now().toString(),
-              name: _enteredName,
-              quantity: _enteredQuantity,
-              category: _selectedCategory));
+      http.post(url,
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'name': _enteredName,
+            'quantity': _enteredQuantity,
+            'category': _selectedCategory.category
+          }));
+      // Navigator.pop(
+      //     context,
+      //     GroceryItem(
+      //         id: DateTime.now().toString(),
+      //         name: _enteredName,
+      //         quantity: _enteredQuantity,
+      //         category: _selectedCategory));
     }
   }
 
@@ -44,8 +57,8 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 children: [
                   TextFormField(
                     maxLength: 50,
-                    style: TextStyle(color: Colors.white),
-                    decoration: InputDecoration(label: const Text('Name')),
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(label: Text('Name')),
                     validator: (value) {
                       if (value == null ||
                           value.isEmpty ||
@@ -64,10 +77,10 @@ class _AddItemScreenState extends State<AddItemScreen> {
                     children: [
                       Expanded(
                         child: TextFormField(
-                          decoration: const InputDecoration(
-                              label: const Text('Quantity')),
+                          decoration:
+                              const InputDecoration(label: Text('Quantity')),
                           initialValue: _enteredQuantity.toString(),
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                           keyboardType: TextInputType.number,
                           validator: (value) {
                             if (value == null ||
@@ -105,7 +118,8 @@ class _AddItemScreenState extends State<AddItemScreen> {
                                         ),
                                         Text(
                                           category.value.category,
-                                          style: TextStyle(color: Colors.white),
+                                          style: const TextStyle(
+                                              color: Colors.white),
                                         )
                                       ],
                                     ))

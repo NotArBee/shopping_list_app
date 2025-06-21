@@ -5,7 +5,7 @@ import 'package:shopping_list/screens/grocery_list.dart';
 
 final theme = ThemeData(
     colorScheme: ColorScheme.fromSeed(
-      seedColor: Color.fromARGB(255, 147, 229, 250),
+      seedColor: const Color.fromARGB(255, 147, 229, 250),
       brightness: Brightness.dark,
       surface: const Color.fromARGB(255, 42, 51, 59),
     ),
@@ -16,7 +16,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((fn) {
-    runApp(MyApp());
+    runApp(const MyApp());
   });
 }
 
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: theme,
-      home: GroceryList(),
+      home: const GroceryList(),
     );
   }
 }

@@ -13,8 +13,8 @@ class _GroceryListState extends State<GroceryList> {
   final List<GroceryItem> _groceryItems = [];
 
   void _addItem() async {
-    final newItem = await Navigator.push<GroceryItem>(
-        context, MaterialPageRoute(builder: (context) => AddItemScreen()));
+    final newItem = await Navigator.push<GroceryItem>(context,
+        MaterialPageRoute(builder: (context) => const AddItemScreen()));
 
     if (newItem == null) {
       return;
@@ -37,7 +37,7 @@ class _GroceryListState extends State<GroceryList> {
         'Grocery Item is deleted',
         style: TextStyle(color: ColorScheme.of(context).onSecondaryContainer),
       ),
-      duration: Duration(seconds: 5),
+      duration: const Duration(seconds: 5),
       action: SnackBarAction(
           label: 'undo',
           textColor: ColorScheme.of(context).onSecondaryContainer,
@@ -72,7 +72,7 @@ class _GroceryListState extends State<GroceryList> {
                     key: ValueKey(_groceryItems[index].id),
                     background: Container(
                       color: Colors.redAccent,
-                      margin: EdgeInsets.symmetric(horizontal: 4),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
                     ),
                     onDismissed: (direction) {
                       _deleteItem(_groceryItems[index]);
