@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shopping_list/data/categories.dart';
 import 'package:shopping_list/models/category.dart';
+import 'package:shopping_list/models/grocery_item.dart';
 
 class AddItemScreen extends StatefulWidget {
   const AddItemScreen({super.key});
@@ -17,21 +18,41 @@ class _AddItemScreenState extends State<AddItemScreen> {
   var _enteredName = '';
   var _enteredQuantity = 1;
   var _selectedCategory = categories[Categories.meat]!;
+  var _isSending = false;
 
-  void _saveItem() {
+  void _saveItem() async {
     final url = Uri.https(
         'flutter-prep-81837-default-rtdb.asia-southeast1.firebasedatabase.app',
         'shopping-list.json');
 
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      http.post(url,
+
+      setState(() {
+        _isSending = true;
+      });
+
+      final response = await http.post(url,
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'name': _enteredName,
             'quantity': _enteredQuantity,
-            'category': _selectedCategory.category
+            'category': _selectedCategory.title
           }));
+
+      final Map<String, dynamic> resData = json.decode(response.body);
+
+      if (!context.mounted) {
+        return;
+      }
+
+      Navigator.pop(
+          context,
+          GroceryItem(
+              id: resData['name'],
+              name: _enteredName,
+              quantity: _enteredQuantity,
+              category: _selectedCategory));
       // Navigator.pop(
       //     context,
       //     GroceryItem(
@@ -117,7 +138,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                                           width: 12,
                                         ),
                                         Text(
-                                          category.value.category,
+                                          category.value.title,
                                           style: const TextStyle(
                                               color: Colors.white),
                                         )
@@ -139,16 +160,24 @@ class _AddItemScreenState extends State<AddItemScreen> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                          onPressed: () {
-                            _formKey.currentState!.reset();
-                          },
+                          onPressed: _isSending
+                              ? null
+                              : () {
+                                  _formKey.currentState!.reset();
+                                },
                           child: const Text('Reset')),
                       ElevatedButton(
                         onPressed: _saveItem,
                         style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 ColorScheme.of(context).primaryContainer),
-                        child: const Text('Submit'),
+                        child: _isSending
+                            ? const SizedBox(
+                                height: 16,
+                                width: 16,
+                                child: CircularProgressIndicator(),
+                              )
+                            : const Text('Submit'),
                       )
                     ],
                   )
