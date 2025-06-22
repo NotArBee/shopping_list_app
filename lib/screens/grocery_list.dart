@@ -71,28 +71,42 @@ class _GroceryListState extends State<GroceryList> {
     });
   }
 
-  void _deleteItem(GroceryItem groceryItem) {
+  void _deleteItem(GroceryItem groceryItem) async {
     final groceryItemIndex = _groceryItems.indexOf(groceryItem);
+    final url = Uri.https(
+        'flutter-prep-81837-default-rtdb.asia-southeast1.firebasedatabase.app',
+        'shopping-list/${groceryItem.id}.json');
+
     setState(() {
       _groceryItems.remove(groceryItem);
     });
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      backgroundColor: ColorScheme.of(context).secondaryContainer,
-      content: Text(
-        'Grocery Item is deleted',
-        style: TextStyle(color: ColorScheme.of(context).onSecondaryContainer),
-      ),
-      duration: const Duration(seconds: 5),
-      action: SnackBarAction(
-          label: 'undo',
-          textColor: ColorScheme.of(context).onSecondaryContainer,
-          onPressed: () {
-            setState(() {
-              _groceryItems.insert(groceryItemIndex, groceryItem);
-            });
-          }),
-    ));
+
+    final response = await http.delete(url);
+
+    if (response.statusCode >= 400) {
+      setState(() {
+        _groceryItems.insert(groceryItemIndex, groceryItem);
+      });
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: ColorScheme.of(context).secondaryContainer,
+        content: Text(
+          'Error when deleting item. Please try again later',
+          style: TextStyle(color: ColorScheme.of(context).onSecondaryContainer),
+        ),
+        duration: const Duration(seconds: 5),
+      ));
+    } else {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: ColorScheme.of(context).secondaryContainer,
+        content: Text(
+          'Item is deleted',
+          style: TextStyle(color: ColorScheme.of(context).onSecondaryContainer),
+        ),
+        duration: const Duration(seconds: 5),
+      ));
+    }
   }
 
   @override
