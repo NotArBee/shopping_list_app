@@ -32,34 +32,62 @@ class _AddItemScreenState extends State<AddItemScreen> {
         _isSending = true;
       });
 
-      final response = await http.post(url,
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'name': _enteredName,
-            'quantity': _enteredQuantity,
-            'category': _selectedCategory.title
-          }));
+      try {
+        final response = await http.post(url,
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              'name': _enteredName,
+              'quantity': _enteredQuantity,
+              'category': _selectedCategory.title
+            }));
 
-      final Map<String, dynamic> resData = json.decode(response.body);
+        final Map<String, dynamic> resData = json.decode(response.body);
 
-      if (!context.mounted) {
-        return;
+        if (!context.mounted) {
+          return;
+        }
+
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: ColorScheme.of(context).secondaryContainer,
+          content: Text('Success add shopping list.',
+              style: TextStyle(
+                  color: ColorScheme.of(context).onSecondaryContainer)),
+          duration: Duration(seconds: 5),
+        ));
+
+        Navigator.pop(
+            context,
+            GroceryItem(
+                id: resData['name'],
+                name: _enteredName,
+                quantity: _enteredQuantity,
+                category: _selectedCategory));
+        // Navigator.pop(
+        //     context,
+        //     GroceryItem(
+        //         id: DateTime.now().toString(),
+        //         name: _enteredName,
+        //         quantity: _enteredQuantity,
+        //         category: _selectedCategory));
+      } catch (error) {
+        setState(() {
+          _isSending = false;
+        });
+
+        if (!context.mounted) {
+          return;
+        }
+
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: ColorScheme.of(context).secondaryContainer,
+          content: Text('Something went wrong. Please try again later.',
+              style: TextStyle(
+                  color: ColorScheme.of(context).onSecondaryContainer)),
+          duration: const Duration(seconds: 5),
+        ));
       }
-
-      Navigator.pop(
-          context,
-          GroceryItem(
-              id: resData['name'],
-              name: _enteredName,
-              quantity: _enteredQuantity,
-              category: _selectedCategory));
-      // Navigator.pop(
-      //     context,
-      //     GroceryItem(
-      //         id: DateTime.now().toString(),
-      //         name: _enteredName,
-      //         quantity: _enteredQuantity,
-      //         category: _selectedCategory));
     }
   }
 

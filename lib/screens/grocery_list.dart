@@ -29,40 +29,40 @@ class _GroceryListState extends State<GroceryList> {
         'flutter-prep-81837-default-rtdb.asia-southeast1.firebasedatabase.app',
         'shopping-list.json');
 
-    final response = await http.get(url);
+    try {
+      final response = await http.get(url);
 
-    if (response.statusCode >= 400) {
+      if (response.body == 'null') {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final Map<String, dynamic> listData = json.decode(response.body);
+
+      final List<GroceryItem> loadedItems = [];
+
+      for (final item in listData.entries) {
+        final category = categories.entries
+            .firstWhere(
+                (catItem) => catItem.value.title == item.value['category'])
+            .value;
+        loadedItems.add(GroceryItem(
+            id: item.key,
+            name: item.value['name'],
+            quantity: item.value['quantity'],
+            category: category));
+      }
+      setState(() {
+        _groceryItems = loadedItems;
+        _isLoading = false;
+      });
+    } catch (error) {
       setState(() {
         _error = 'Failed to fetch data. Please try again later.';
       });
     }
-
-    if (response.body == 'null') {
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
-
-    final Map<String, dynamic> listData = json.decode(response.body);
-
-    final List<GroceryItem> loadedItems = [];
-
-    for (final item in listData.entries) {
-      final category = categories.entries
-          .firstWhere(
-              (catItem) => catItem.value.title == item.value['category'])
-          .value;
-      loadedItems.add(GroceryItem(
-          id: item.key,
-          name: item.value['name'],
-          quantity: item.value['quantity'],
-          category: category));
-    }
-    setState(() {
-      _groceryItems = loadedItems;
-      _isLoading = false;
-    });
   }
 
   void _addItem() async {
@@ -88,9 +88,19 @@ class _GroceryListState extends State<GroceryList> {
       _groceryItems.remove(groceryItem);
     });
 
-    final response = await http.delete(url);
+    try {
+      final response = await http.delete(url);
 
-    if (response.statusCode >= 400) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: ColorScheme.of(context).secondaryContainer,
+        content: Text(
+          'Item is deleted',
+          style: TextStyle(color: ColorScheme.of(context).onSecondaryContainer),
+        ),
+        duration: const Duration(seconds: 5),
+      ));
+    } catch (error) {
       setState(() {
         _groceryItems.insert(groceryItemIndex, groceryItem);
       });
@@ -99,16 +109,6 @@ class _GroceryListState extends State<GroceryList> {
         backgroundColor: ColorScheme.of(context).secondaryContainer,
         content: Text(
           'Error when deleting item. Please try again later',
-          style: TextStyle(color: ColorScheme.of(context).onSecondaryContainer),
-        ),
-        duration: const Duration(seconds: 5),
-      ));
-    } else {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: ColorScheme.of(context).secondaryContainer,
-        content: Text(
-          'Item is deleted',
           style: TextStyle(color: ColorScheme.of(context).onSecondaryContainer),
         ),
         duration: const Duration(seconds: 5),
